@@ -18,7 +18,7 @@ import com.jkubinyi.simplerest.exception.NullNotEnabledException;
 public class BookService {
 
 	@Autowired
-	//@Qualifier("bookJpa")
+	@Qualifier("bookJpa")
 	private BookDao bookDao;
 	
 	public Optional<BookDto> getBookById(UUID id) {
@@ -49,7 +49,6 @@ public class BookService {
 		if(book == null) throw new NullNotEnabledException();
 		Book bookEntity = new Book(book.getTitle(), book.getAuthor(), book.getYear());
 		bookEntity.setId(UUID.randomUUID());
-		this.bookDao.save(bookEntity);
-		return Optional.of(bookEntity);
+		return Optional.ofNullable(this.bookDao.save(bookEntity));
 	}
 }

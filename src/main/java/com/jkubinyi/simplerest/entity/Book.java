@@ -4,16 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import com.jkubinyi.simplerest.dao.Identifiable;
 
+@Entity
+@Table(name = "book")
 public class Book implements Identifiable<UUID> {
-	
+
+	@Id
+	@Column(name = "id")
 	private UUID id;
 	
+	@Column(name = "title", unique = true, updatable = false)
 	private String title;
 	
+	@Column(name = "author")
 	private String author;
 	
+	@Column(name = "year")
 	private int year;
 	
 	private List<String> genre = new ArrayList<>();
@@ -68,14 +80,6 @@ public class Book implements Identifiable<UUID> {
 	
 	public List<String> getGenres() {
 		return genre;
-	}
-	
-	public void addGenre(String genre) {
-		this.genre.add(genre);
-	}
-	
-	public void removeGenre(String genre) {
-		this.genre.remove(genre);
 	}
 
 }
