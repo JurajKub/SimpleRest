@@ -88,6 +88,39 @@ public class GenericDaoConnectionImpl<T extends Identifiable<ID>, ID> implements
 
 	@Override
 	public void delete(T entity) {
+		try {
+			try(Connection connection = this.pool.getConnection()) {
+				Class<?> clazz = entity.getClass();
+				String pkColumnName = EntityModel.columnsListOf(clazz, (field, column) -> {
+					if(field.isAnnotationPresent(Id.class))
+						return true;
+					return false;
+				}).get(0);
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append("DELETE FROM `")
+				.append(EntityModel.getTableName(clazz))
+				.append("`")
+				.append(" WHERE `")
+				.append(pkColumnName)
+				.append("`=?");
+				
+				PreparedStatement st = connection.prepareStatement(sb.toString());
+				Object value = null;
+				if(entity.getId() instanceof UUID) value = ((UUID) entity.getId()).toString();
+				else value = entity.getId();
+				st.setObject(1, value);
+				st.executeUpdate();
+				connection.commit();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			Unchecked err = new BusinessException.Unchecked();
+			err.initCause(e);
+			err.setMessage("Problem during processing request");
+			err.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+			throw err;
+		}
 	}
 
 	@Override
@@ -115,8 +148,9 @@ public class GenericDaoConnectionImpl<T extends Identifiable<ID>, ID> implements
 				else value = id;
 				st.setObject(1, value);
 				ResultSet resultSet = st.executeQuery();
-				resultSet.next(); // Get only first result
-				return Optional.ofNullable(this.resultSetToEntity(clazz, resultSet));
+				if(resultSet.next()) { // Get only first result
+					return Optional.ofNullable(this.resultSetToEntity(clazz, resultSet));
+				} else return Optional.empty();
 			}
 		} catch(Exception e) {
 			e.printStackTrace();

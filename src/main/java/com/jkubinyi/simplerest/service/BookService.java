@@ -51,4 +51,10 @@ public class BookService {
 		bookEntity.setId(UUID.randomUUID());
 		return Optional.ofNullable(this.bookDao.save(bookEntity));
 	}
+	
+	public void deleteBookById(UUID id) {
+		Book book = new Book();
+		book.setId(id);
+		this.bookDao.delete(book);
+	}
 }
