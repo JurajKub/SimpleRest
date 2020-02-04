@@ -60,11 +60,11 @@ public class GenericDaoConnectionImpl<T extends Identifiable<ID>, ID> implements
 	@Override
 	public List<T> findAll() {
 		try {
+			List<T> result = new ArrayList<>();
 			try(Connection connection = this.pool.getConnection()) {
 				Class<T> clazz = this.getEntityClass();
 				Statement st = connection.createStatement();
 				StringBuilder sb = new StringBuilder();
-				List<T> result = new ArrayList<>();
 				sb.append("SELECT * FROM `")
 				.append(EntityModel.getTableName(clazz))
 				.append("`");
@@ -74,8 +74,8 @@ public class GenericDaoConnectionImpl<T extends Identifiable<ID>, ID> implements
 					T inst = this.resultSetToEntity(clazz, resultSet);
 					result.add(inst);
 				}
-				return result;
 			}
+			return result;
 		} catch(Exception e) {
 			e.printStackTrace();
 			Unchecked err = new BusinessException.Unchecked();
